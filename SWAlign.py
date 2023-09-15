@@ -1,114 +1,83 @@
-from pynput.mouse import Button, Controller
-from pynput import mouse
+from SWAlign.HIDControl import get_document_dimensions, get_datum_locations, move_mouse
 import numpy as np
+import inquirer
 import time
+import os
 
-mouse_controller = Controller()
+def main():
+    # Getting positions
+    positions = {
+        'referenceTL': (None, None),
+        'referenceBR': (None, None),
+        'actualTL': (None, None),
+        'actualBR': (None, None),
+    }
 
-clicked = False
-def on_click(x, y, button, pressed) -> None:
-    global clicked
-    clicked = pressed
+    questions = [
+    inquirer.List('behaviour',
+                    message='Select program behaviour?',
+                    choices=['Move after datum selection', 'Move after datum selection (no break)', 'Move after mass selection'],
+                ),
+    ]
+    positions = get_document_dimensions(positions)
+    os.system('cls' if os.name == 'nt' else 'clear')
 
+    answers = inquirer.prompt(questions)
+    match answers['behaviour']:
+        case 'Move after datum selection':
+            while True:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                input('Click enter to continue to datum definition')
+                try:
+                    datum_locations = get_datum_locations()
+                except KeyboardInterrupt:
+                    print("User interrupt detected!")
+                    continue
+                print("Await till' move; Please let go of mouse")
+                print(f'Move in 1.5')
+                time.sleep(1.5)
+                move_mouse(datum_locations['referenceDatum'], datum_locations['actualDatum'], positions)
 
-def get_coord(prompt: str) -> (int, int):
-    print(prompt)
-    while clicked == False:
-        pass
-    while clicked == True:
-        pass
-    mouse_position = mouse_controller.position
-    print(mouse_position)
-    return mouse_position
+        case 'Move after datum selection (no break)':
+            while True:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                try:
+                    datum_locations = get_datum_locations()
+                except KeyboardInterrupt:
+                    print("User interrupt detected!")
+                    input('Click enter to continue to datum definition')
+                    continue
+                print("Await till' move; Please let go of mouse")
+                print(f'Move in 1.5')
+                time.sleep(1.5)
+                move_mouse(datum_locations['referenceDatum'], datum_locations['actualDatum'], positions)
 
-
-def get_document():
-    global positions
-    global clicked
-    positions['referenceTL'] = get_coord("Click TOP LEFT (┌) corner of reference document")
-    clicked = False
-    positions['referenceBR'] = get_coord("Click BOTTOM RIGHT (┘) corner of reference document")
-    clicked = False
-    positions['actualTL'] = get_coord("Click TOP LEFT (┌) corner of actual document")
-    clicked = False
-    positions['actualBR'] = get_coord("Click BOTTOM RIGHT (┘) corner of actual document")
-    clicked = False
-
-
-def get_datums():
-    global positions
-    global clicked
-    input('Click enter to continue to datum definition')
-    positions['referenceDatum'] = get_coord("Click datum of the reference object")
-    clicked = False
-    positions['actualDatum'] = get_coord("Click datum of the actual object")
-    clicked = False
-
-
-def move_mouse():
-    global positions
-    global clicked
-    # Calculations
-    # Coordinates of the top-left corner and bottom-right corner of both documents
-    ref_top_left = positions['referenceTL']
-    clicked = False
-    ref_bottom_right = positions['referenceBR']
-    clicked = False
-
-    actual_top_left = positions['actualTL']
-    clicked = False
-    actual_bottom_right = positions['actualBR']
-    clicked = False
-
-    # Point on the reference document
-    ref_point = positions['referenceDatum']
-
-    # Calculate scaling factors
-    scale_x = (actual_bottom_right[0] - actual_top_left[0]) / (ref_bottom_right[0] - ref_top_left[0])
-    scale_y = (actual_bottom_right[1] - actual_top_left[1]) / (ref_bottom_right[1] - ref_top_left[1])
-
-    # Calculate translation vector
-    translation_x = actual_top_left[0] - ref_top_left[0] * scale_x
-    translation_y = actual_top_left[1] - ref_top_left[1] * scale_y
-
-    # Apply the transformation to the reference point
-    actual_point_x = ref_point[0] * scale_x + translation_x
-    actual_point_y = ref_point[1] * scale_y + translation_y
-
-    # Update the positions dictionary with the new actual coordinates
-    new_actual_datum = (actual_point_x, actual_point_y)
-
-    print("Await till' move; Please let go of mouse")
-
-    for i in range(1):
-        print(f'Move in {i}')
-        time.sleep(1)
-
-    mouse_controller.position = positions['actualDatum']
-    time.sleep(0.1)
-    mouse_controller.press(Button.left)
-    time.sleep(0.1)
-    mouse_controller.position = new_actual_datum
-    time.sleep(0.1)
-    mouse_controller.release(Button.left)
+        case 'Move after mass selection':
+            datum_coordinates = []
+            while True:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print('ctrl+c to continue to movement')
+                if len(datum_coordinates) != 0:
+                    print(f'Current positions:   {datum_coordinates[0]}')
+                    for i, e in enumerate(datum_coordinates):
+                        if i == 0:
+                            continue
+                        print(f'                     {datum_coordinates[i]}')
+                try:
+                    datum_locations = get_datum_locations()
+                    datum_coordinates.append((datum_locations['referenceDatum'], datum_locations['actualDatum']))
+                except KeyboardInterrupt:
+                    print('User interrupt detected!')
+                    print('Please return to live document')
+                    seconds_to_wait = 10
+                    for i in np.arange(seconds_to_wait)[::-1] + 1:
+                        print(f'Moving {i} seconds...', end='\r')
+                        time.sleep(1)
+                    break
+            for datum in datum_coordinates:
+                move_mouse(datum[0], datum[0], positions)
+                time.sleep(0.25)
 
 
-listener = mouse.Listener(
-    on_click=on_click,)
-listener.start()
-# Getting positions
-positions = {
-    'referenceTL': (None, None),
-    'referenceBR': (None, None),
-    'actualTL': (None, None),
-    'actualBR': (None, None),
-    'referenceDatum': (None, None),
-    'actualDatum': (None, None),
-}
-get_document()
-
-while True:
-    get_datums()
-    move_mouse()
-
-
+if __name__ == '__main__':
+    main()
