@@ -75,7 +75,7 @@ def main():
                         time.sleep(1)
                     break
             for datum in datum_coordinates:
-                move_mouse(datum[0], datum[0], positions)
+                move_mouse(datum[0], datum[1], positions)
                 time.sleep(0.25)
 
 
