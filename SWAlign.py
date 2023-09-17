@@ -34,8 +34,8 @@ def main():
                     print("User interrupt detected!")
                     continue
                 print("Await till' move; Please let go of mouse")
-                print(f'Move in 1.5')
-                time.sleep(1.5)
+                print(f'Move in 2')
+                time.sleep(2)
                 move_mouse(datum_locations['referenceDatum'], datum_locations['actualDatum'], positions)
 
         case 'Move after datum selection (no break)':
@@ -48,8 +48,8 @@ def main():
                     input('Click enter to continue to datum definition')
                     continue
                 print("Await till' move; Please let go of mouse")
-                print(f'Move in 1.5')
-                time.sleep(1.5)
+                print(f'Move in 2')
+                time.sleep(2)
                 move_mouse(datum_locations['referenceDatum'], datum_locations['actualDatum'], positions)
 
         case 'Move after mass selection':
