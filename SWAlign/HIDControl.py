@@ -1,4 +1,5 @@
 from pynput.mouse import Button, Controller
+from pynput.keyboard import Key, Controller
 from pynput import mouse
 import time
 
@@ -7,7 +8,7 @@ def click_detected(x, y, button, pressed) -> None:
     global clicked
     clicked = pressed
 
-
+keyboard_controller = Controller()
 mouse_controller = Controller()
 clicked = False
 listener = mouse.Listener(
@@ -81,9 +82,12 @@ def move_mouse(datum_reference:(int, int), datum_actual:(int, int), positions:di
 
 
     mouse_controller.position = datum_actual
+    keyboard_controller.press(Key.alt)
     time.sleep(0.1)
     mouse_controller.press(Button.left)
     time.sleep(0.1)
     mouse_controller.position = new_actual_datum
     time.sleep(0.1)
     mouse_controller.release(Button.left)
+    keyboard_controller.release(Key.alt)
+    
