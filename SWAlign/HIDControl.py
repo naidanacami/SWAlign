@@ -1,5 +1,6 @@
 from pynput.mouse import Button, Controller
-from pynput.keyboard import Key, Controller
+from pynput.keyboard import Key
+from pynput.keyboard import Controller as KeyController
 from pynput import mouse
 import time
 
@@ -8,7 +9,7 @@ def click_detected(x, y, button, pressed) -> None:
     global clicked
     clicked = pressed
 
-keyboard_controller = Controller()
+keyboard_controller = KeyController()
 mouse_controller = Controller()
 clicked = False
 listener = mouse.Listener(
