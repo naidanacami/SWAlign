@@ -4,7 +4,8 @@ from pynput.keyboard import Controller as KeyController
 from pynput import mouse
 import time
 
-
+# For document/datum defining. 
+# Can be replaced if needed, just set clicked to True somehow
 def click_detected(x, y, button, pressed) -> None:
     global clicked
     clicked = pressed
@@ -91,4 +92,3 @@ def move_mouse(datum_reference:(int, int), datum_actual:(int, int), positions:di
     time.sleep(0.1)
     mouse_controller.release(Button.left)
     keyboard_controller.release(Key.alt)
-    
