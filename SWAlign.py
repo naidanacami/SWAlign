@@ -56,6 +56,7 @@ def main():
         case 'Move after mass selection':
             while True:
                 datum_coordinates = []
+                input('Click enter to continue to datum definition')
                 while True:
                     os.system('cls' if os.name == 'nt' else 'clear')
                     print('ctrl+c to continue to movement')
